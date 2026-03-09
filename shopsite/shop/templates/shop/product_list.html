@@ -1,0 +1,43 @@
+{% extends "shop/base.html" %}
+
+{% block title %}Каталог аксессуаров{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">Каталог аксессуаров</h2>
+
+<form method="GET" style="display: flex; gap: 10px; margin-bottom: 20px;">
+    <input type="text" name="q" placeholder="Поиск..." value="{{ request.GET.q }}">
+    
+    <select name="category">
+        <option value="">Все категории</option>
+        {% for c in categories %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="producer">
+        <option value="">Все бренды</option>
+        {% for p in producers %}
+            <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn">Применить</button>
+</form>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
+    {% for p in products %}
+    <div style="background: white; border: 1px solid #eee; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s;">
+        <h3 style="margin-bottom: 15px; min-height: 50px; display: flex; align-items: center; justify-content: center;">{{ p.name }}</h3>
+        <p style="font-size: 1.3rem; color: #27ae60; font-weight: bold; margin-bottom: 20px;">{{ p.price }} руб.</p>
+        
+        <div style="margin-top: 10px;">
+            <a href="{% url 'product_detail' p.id %}" style="display: block; margin-bottom: 12px; color: #7f8c8d; text-decoration: none; font-size: 0.9rem;">Подробнее</a>
+            <a href="{% url 'add_to_cart' p.id %}" style="background: #27ae60; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; display: inline-block; width: 80%; font-weight: bold;">В корзину</a>
+        </div>
+    </div>
+    {% empty %}
+    <p style="grid-column: 1 / -1; text-align: center; color: #999;">Товары не найдены.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Магазин Настолок{% endblock %}</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f8f9fa; color: #333; }
+        header { background-color: #2c3e50; color: white; padding: 1rem 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        nav { background: #34495e; padding: 10px; text-align: center; }
+        nav a { color: white; margin: 0 15px; text-decoration: none; font-weight: bold; }
+        nav a:hover { color: #1abc9c; }
+        .container { max-width: 1100px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+        footer { text-align: center; padding: 20px; font-size: 0.9rem; color: #777; margin-top: 40px; border-top: 1px solid #ddd; }
+        .btn { display: inline-block; background: #1abc9c; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; transition: 0.3s; }
+        .btn:hover { background: #16a085; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>BOARDGAME ACCESSORIES</h1>
+</header>
+
+<nav>
+    <a href="{% url 'product_list' %}">Каталог</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'cart_view' %}">Корзина</a>
+        <span style="color: #1abc9c; margin: 0 15px;">Привет, <b>{{ user.username }}</b>!</span>
+        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+    {% csrf_token %}
+    <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-weight: bold; padding: 0;">
+        Выход
+    </button>
+</form>
+    {% else %}
+        <a href="{% url 'login' %}">Вход</a>
+        <a href="{% url 'register' %}" style="color: #1abc9c; font-weight: bold;">Регистрация</a>
+        <a href="/admin/" style="font-size: 0.8rem; opacity: 0.7;">(Админ)</a>
+    {% endif %}
+</nav>
+
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<footer>
+    <p>&copy; 2026 Магазин Настольных Игр.</p>
+</footer>
+
+</body>
+</html>
