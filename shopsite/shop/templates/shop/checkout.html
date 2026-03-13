@@ -1,0 +1,40 @@
+{% extends "shop/base.html" %}
+
+{% block content %}
+<div class="container" style="margin: 20px;">
+    <h2>Подтверждение заказа</h2>
+    <p>Проверьте ваш список товаров перед оформлением:</p>
+    
+    <table class="table" border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f4f4f4;">
+                <th>Товар</th>
+                <th>Кол-во</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart.items.all %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.get_cost }} руб.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 20px;">
+        <h3>Итого к оплате: {{ cart.get_total_price }} руб.</h3>
+        
+        <!-- ФОРМА ДЛЯ ОТПРАВКИ -->
+        <form method="post" action="{% url 'checkout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn" style="background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer;">
+                Подтвердить заказ и получить чек на почту
+            </button>
+            <a href="{% url 'cart_view' %}" style="margin-left: 15px;">Вернуться в корзину</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

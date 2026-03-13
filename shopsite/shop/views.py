@@ -4,6 +4,9 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
+import openpyxl
+from io import BytesIO
+from django.core.mail import EmailMessage
 
 def product_list(request):
     products = Product.objects.all()
@@ -71,3 +74,36 @@ def register(request):
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
+
+def checkout_view(request):
+    cart = Cart.objects.get(user=request.user)
+    items = cart.items.all()
+
+    if request.method == 'POST':
+        print("Отправка письма: ")
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Чек"
+        ws.append(['Товар', 'Количество', 'Цена за шт.', 'Итого'])
+        
+        for item in items:
+            ws.append([item.product.name, item.quantity, item.product.price, item.get_cost()])
+        
+        buffer = BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        email = EmailMessage(
+            'Ваш чек заказа',
+            'Спасибо! Ваш чек во вложении.',
+            'admin@shop.ru',
+            [request.user.email or 'test@mail.ru'],
+        )
+        email.attach('receipt.xlsx', buffer.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        email.send()
+
+        items.delete() 
+        
+        return render(request, 'shop/success.html')
+
+    return render(request, 'shop/checkout.html', {'cart': cart})
