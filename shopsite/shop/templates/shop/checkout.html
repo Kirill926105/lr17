@@ -27,13 +27,18 @@
     <div style="margin-top: 20px;">
         <h3>Итого к оплате: {{ cart.get_total_price }} руб.</h3>
         
-        <!-- ФОРМА ДЛЯ ОТПРАВКИ -->
         <form method="post" action="{% url 'checkout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn" style="background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer;">
-                Подтвердить заказ и получить чек на почту
+            {% csrf_token %}   
+            <div style="margin-bottom: 20px;">
+            <label for="email"><strong>Введите почту для получения чека:</strong></label><br>
+            <input type="email" name="user_email" id="email" required 
+               placeholder="example@mail.ru"
+               style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <button type="submit" class="btn" style="background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px;">
+                Подтвердить заказ и получить чек
             </button>
-            <a href="{% url 'cart_view' %}" style="margin-left: 15px;">Вернуться в корзину</a>
         </form>
     </div>
 </div>

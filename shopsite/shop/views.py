@@ -80,12 +80,11 @@ def checkout_view(request):
     items = cart.items.all()
 
     if request.method == 'POST':
-        print("Отправка письма: ")
+        target_email = request.POST.get('user_email')
+        
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "Чек"
         ws.append(['Товар', 'Количество', 'Цена за шт.', 'Итого'])
-        
         for item in items:
             ws.append([item.product.name, item.quantity, item.product.price, item.get_cost()])
         
@@ -95,15 +94,14 @@ def checkout_view(request):
 
         email = EmailMessage(
             'Ваш чек заказа',
-            'Спасибо! Ваш чек во вложении.',
-            'admin@shop.ru',
-            [request.user.email or 'test@mail.ru'],
+            'Спасибо! Чек во вложении.',
+            'krzkerouzz@gmail.com',
+            [target_email],
         )
         email.attach('receipt.xlsx', buffer.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         email.send()
 
         items.delete() 
-        
-        return render(request, 'shop/success.html')
+        return render(request, 'shop/success.html', {'email': target_email})
 
     return render(request, 'shop/checkout.html', {'cart': cart})
