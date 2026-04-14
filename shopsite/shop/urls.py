@@ -13,8 +13,9 @@ router.register(r'orders', views.OrderViewSet, basename='orders')
 router.register(r'order-items', views.OrderItemViewSet, basename='order-items')
 
 urlpatterns = [
-    # ===== твои обычные страницы (как было) =====
-    path('', views.product_list, name='product_list'),
+    path('', views.index, name='index'),
+    path('catalog/', views.product_list, name='catalog'),
+
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('cart/add/<int:product_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/update/<int:item_id>/', views.update_cart, name='update_cart'),
@@ -23,6 +24,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('checkout/', views.checkout_view, name='checkout'),
 
-    # ===== API =====
+    path('api/cart/add/', views.api_cart_add, name='api_cart_add'),
+
     path('api/', include(router.urls)),
 ]

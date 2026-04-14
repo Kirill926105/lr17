@@ -16,27 +16,43 @@ from .serializers import (
     CartSerializer, CartItemSerializer,
     OrderSerializer, OrderItemSerializer
 )
+import random
+from django.core.paginator import Paginator
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+
+def index(request):
+    products = list(Product.objects.order_by('-id')[:12])
+    popular = random.sample(products, min(6, len(products)))
+    return render(request, 'shop/index.html', {'popular': popular})
 
 def product_list(request):
     products = Product.objects.all()
     categories = Category.objects.all()
     producers = Producer.objects.all()
 
-    query = request.GET.get('q')
-    if query:
-        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    q = request.GET.get('q', '')
+    category = request.GET.get('category', '')
+    producer = request.GET.get('producer', '')
 
-    cat_id = request.GET.get('category')
-    prod_id = request.GET.get('producer')
-    if cat_id:
-        products = products.filter(category_id=cat_id)
-    if prod_id:
-        products = products.filter(producer_id=prod_id)
+    if q:
+        products = products.filter(Q(name__icontains=q) | Q(description__icontains=q))
+    if category:
+        products = products.filter(category_id=category)
+    if producer:
+        products = products.filter(producer_id=producer)
 
-    return render(request, 'shop/product_list.html', {
-        'products': products, 
-        'categories': categories, 
-        'producers': producers
+    paginator = Paginator(products, 9)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'shop/catalog.html', {
+        'page_obj': page_obj,
+        'categories': categories,
+        'producers': producers,
+        'q': q,
+        'category': category,
+        'producer': producer,
     })
 
 def product_detail(request, product_id):
@@ -84,6 +100,7 @@ def register(request):
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
 
+@login_required
 def checkout_view(request):
     cart = Cart.objects.get(user=request.user)
     items = cart.items.all()
@@ -126,9 +143,24 @@ class ProducerViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all().select_related("category", "producer")
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = Product.objects.all().select_related("category", "producer")
+
+        q = self.request.query_params.get('q')
+        category = self.request.query_params.get('category')
+        producer = self.request.query_params.get('producer')
+
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
+        if category:
+            qs = qs.filter(category_id=category)
+        if producer:
+            qs = qs.filter(producer_id=producer)
+
+        return qs
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
@@ -180,3 +212,24 @@ class OrderItemViewSet(viewsets.ModelViewSet):
             raise ValidationError("Нельзя добавлять элементы в чужой заказ.")
 
         serializer.save(price=product.price)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_cart_add(request):
+    product_id = request.data.get('product_id')
+    quantity = int(request.data.get('quantity', 1))
+
+    if not product_id:
+        return Response({'error': 'product_id is required'}, status=400)
+
+    product = get_object_or_404(Product, id=product_id)
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+
+    item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if created:
+        item.quantity = quantity
+    else:
+        item.quantity += quantity
+    item.save()
+
+    return Response({'ok': True, 'item_id': item.id, 'quantity': item.quantity})

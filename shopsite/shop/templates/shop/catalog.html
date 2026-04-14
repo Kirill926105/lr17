@@ -1,0 +1,36 @@
+{% extends "shop/base.html" %}
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="hero mb-4">
+  <div class="row align-items-center g-3">
+    <div class="col-12 col-lg-8">
+      <h1 class="display-6 fw-bold mb-2">Аксессуары для настольных игр</h1>
+      <p class="lead text-muted mb-3">
+        Каталог аксессуаров: чехлы, защита, держатели и др.
+      </p>
+      <a class="btn btn-success btn-lg" href="{% url 'catalog' %}">Перейти в каталог</a>
+    </div>
+  </div>
+</div>
+
+<h2 class="h4 mb-3">Популярные товары</h2>
+<div class="row g-3">
+  {% for p in popular %}
+  <div class="col-12 col-sm-6 col-lg-4">
+    <div class="card h-100">
+      {% if p.image %}
+        <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
+      {% endif %}
+      <div class="card-body">
+        <div class="fw-bold mb-1">{{ p.name }}</div>
+        <div class="price">{{ p.price }} руб.</div>
+      </div>
+      <div class="card-footer bg-white border-0">
+        <a class="btn btn-outline-primary w-100" href="{% url 'product_detail' p.id %}">Подробнее</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
