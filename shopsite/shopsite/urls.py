@@ -20,5 +20,10 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('shop.urls')),
+
+    # login/logout для сайта (чтобы {% url 'logout' %} работал)
     path('accounts/', include('django.contrib.auth.urls')),
+
+    # логин для browsable API DRF (проверка без Postman)
+    path('api-auth/', include('rest_framework.urls')),
 ]

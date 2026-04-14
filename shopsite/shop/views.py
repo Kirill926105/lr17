@@ -7,6 +7,15 @@ from django.contrib.auth import login
 import openpyxl
 from io import BytesIO
 from django.core.mail import EmailMessage
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
+from .models import Category, Producer, Product, Cart, CartItem, Order, OrderItem
+from .serializers import (
+    CategorySerializer, ProducerSerializer, ProductSerializer,
+    CartSerializer, CartItemSerializer,
+    OrderSerializer, OrderItemSerializer
+)
 
 def product_list(request):
     products = Product.objects.all()
@@ -105,3 +114,69 @@ def checkout_view(request):
         return render(request, 'shop/success.html', {'email': target_email})
 
     return render(request, 'shop/checkout.html', {'cart': cart})
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
+
+class ProducerViewSet(viewsets.ModelViewSet):
+    queryset = Producer.objects.all()
+    serializer_class = ProducerSerializer
+    permission_classes = [IsAuthenticated]
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all().select_related("category", "producer")
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+
+class CartViewSet(viewsets.ModelViewSet):
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Cart.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        if Cart.objects.filter(user=self.request.user).exists():
+            raise ValidationError("У пользователя уже есть корзина.")
+        serializer.save(user=self.request.user)
+
+class CartItemViewSet(viewsets.ModelViewSet):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart__user=self.request.user).select_related("product", "cart")
+
+    def perform_create(self, serializer):
+        cart = Cart.objects.filter(user=self.request.user).first()
+        if not cart:
+            raise ValidationError("Сначала создайте корзину (Cart).")
+        serializer.save(cart=cart)
+
+class OrderViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class OrderItemViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return OrderItem.objects.filter(order__user=self.request.user).select_related("product", "order")
+
+    def perform_create(self, serializer):
+        order = serializer.validated_data["order"]
+        product = serializer.validated_data["product"]
+
+        if order.user != self.request.user:
+            raise ValidationError("Нельзя добавлять элементы в чужой заказ.")
+
+        serializer.save(price=product.price)
