@@ -20,6 +20,7 @@ import random
 from django.core.paginator import Paginator
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 def index(request):
     products = list(Product.objects.order_by('-id')[:12])
@@ -95,7 +96,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('product_list')
+            return redirect('catalog')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -144,7 +145,7 @@ class ProducerViewSet(viewsets.ModelViewSet):
 
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         qs = Product.objects.all().select_related("category", "producer")

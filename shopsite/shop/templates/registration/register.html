@@ -7,7 +7,7 @@
     <h2>Регистрация нового игрока</h2>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }} <!-- Django сам выведет поля логина и пароля -->
+        {{ form.as_p }}
         <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Зарегистрироваться</button>
     </form>
     <p style="margin-top: 15px; font-size: 0.9rem;">

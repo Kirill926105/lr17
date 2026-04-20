@@ -34,7 +34,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="5" style="padding: 20px; color: #777;">Ваша корзина пока пуста. <a href="{% url 'product_list' %}">Вернуться в каталог</a></td>
+            <td colspan="5" style="padding: 20px; color: #777;">Ваша корзина пока пуста. <a href="{% url 'catalog' %}">Вернуться в каталог</a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -51,6 +51,6 @@
 </div>
 
 <div style="margin-top: 30px;">
-    <a href="{% url 'product_list' %}" style="color: #34495e;">← Назад к покупкам</a>
+    <a href="{% url 'catalog' %}">← Назад к покупкам</a>
 </div>
 {% endblock %}
