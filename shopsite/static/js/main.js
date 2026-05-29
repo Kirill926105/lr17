@@ -16,6 +16,25 @@ function setVisible(id, visible) {
     if (parts.length === 2) return parts.pop().split(';').shift();
   }
   
+  function getToken() {
+    return localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+  }
+  
+  async function apiFetch(url, options = {}) {
+    const token = getToken();
+    const headers = options.headers || {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    headers['Content-Type'] = 'application/json';
+    const csrf = getCookie('csrftoken');
+    if (csrf) headers['X-CSRFToken'] = csrf;
+    const resp = await fetch(url, { ...options, headers, credentials: 'same-origin' });
+    if (resp.status === 401 || resp.status === 403) {
+    }
+    return resp;
+  }
+  
   function renderProducts(products) {
     const container = document.getElementById('product-list');
     if (!container) return;
@@ -58,7 +77,7 @@ function setVisible(id, visible) {
   
       renderProducts(products);
     } catch (e) {
-      setText('api-error', 'Ошибка загрузки товаров из API (возможно, нужно войти в аккаунт).');
+      setText('api-error', 'Ошибка загрузки товаров из API');
       setVisible('api-error', true);
     } finally {
       setVisible('loading', false);
@@ -67,15 +86,8 @@ function setVisible(id, visible) {
   
   async function addToCart(productId) {
     try {
-      const csrftoken = getCookie('csrftoken');
-  
-      const resp = await fetch('/api/cart/add/', {
+      const resp = await apiFetch('/api/cart/add/', {
         method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken,
-        },
         body: JSON.stringify({ product_id: productId, quantity: 1 })
       });
   

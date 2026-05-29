@@ -1,7 +1,6 @@
 from django.contrib import admin
-from .models import Category, Producer, Product, Cart, CartItem
+from .models import Category, Producer, Product, Cart, CartItem, Profile
 
-# Если у тебя есть Order/OrderItem — раскомментируй импорт и регистрацию ниже
 from .models import Order, OrderItem
 
 
@@ -51,3 +50,10 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ("id", "order", "product", "quantity", "price")
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "role", "full_name", "phone", "delivery_city")
+    list_filter = ("role",)
+    search_fields = ("user__username", "full_name", "phone")

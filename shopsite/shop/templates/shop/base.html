@@ -30,7 +30,8 @@
       <div class="d-flex align-items-center gap-2">
         {% if user.is_authenticated %}
           <span class="navbar-text text-white-50">Привет, {{ user.username }}!</span>
-          <form action="{% url 'logout' %}" method="post" class="m-0">
+          <a class="btn btn-outline-info btn-sm" href="{% url 'account' %}">Личный кабинет</a>
+          <form action="{% url 'logout' %}" method="post" class="m-0" onsubmit="localStorage.removeItem('access_token');localStorage.removeItem('refresh_token')">
             {% csrf_token %}
             <button class="btn btn-outline-light btn-sm" type="submit">Выход</button>
           </form>
