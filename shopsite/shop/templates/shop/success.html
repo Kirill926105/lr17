@@ -1,8 +1,22 @@
 {% extends "shop/base.html" %}
+
+{% block title %}Заказ оформлен{% endblock %}
+
 {% block content %}
-    <div style="text-align: center; margin-top: 50px;">
-        <h1>Заказ успешно оформлен!</h1>
-        <p>Мы отправили чек с деталями заказа на вашу почту: <strong>{{ email }}</strong></p>
-        <a href="{% url 'catalog' %}" class="btn btn-primary">Вернуться к покупкам</a>
-    </div>
+<section class="success-panel text-center">
+  <div class="success-icon">
+    <svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+  </div>
+  <h1 class="h3 mb-3">Заказ успешно оформлен!</h1>
+  {% if order %}
+    <p class="text-muted mb-1">Номер заказа: <strong>#{{ order.id }}</strong></p>
+  {% endif %}
+  <p class="mb-4">Мы отправили чек с деталями заказа на почту: <strong>{{ email }}</strong></p>
+  <div class="d-flex justify-content-center gap-2 flex-wrap">
+    <a href="{% url 'catalog' %}" class="btn btn-success">Вернуться к покупкам</a>
+    <a href="{% url 'account' %}" class="btn btn-outline-primary">Мои заказы</a>
+  </div>
+</section>
 {% endblock %}

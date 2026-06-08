@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Dice set</title>
+  <desc id="desc">Colorful dice for board games</desc>
+  <rect width="640" height="420" fill="#f5f7fb"/>
+  <rect x="135" y="110" width="164" height="164" rx="24" fill="#dc2626" transform="rotate(-10 217 192)"/>
+  <circle cx="180" cy="162" r="13" fill="#fff"/>
+  <circle cx="226" cy="196" r="13" fill="#fff"/>
+  <circle cx="270" cy="230" r="13" fill="#fff"/>
+  <rect x="330" y="104" width="178" height="178" rx="26" fill="#2563eb" transform="rotate(8 419 193)"/>
+  <circle cx="376" cy="154" r="13" fill="#fff"/>
+  <circle cx="460" cy="162" r="13" fill="#fff"/>
+  <circle cx="370" cy="236" r="13" fill="#fff"/>
+  <circle cx="454" cy="244" r="13" fill="#fff"/>
+  <path d="M238 320h176" stroke="#d8e0ea" stroke-width="16" stroke-linecap="round"/>
+  <path d="M286 342h80" stroke="#f59e0b" stroke-width="12" stroke-linecap="round"/>
+</svg>

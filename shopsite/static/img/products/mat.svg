@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Playmat</title>
+  <desc id="desc">Soft playmat for board game table</desc>
+  <rect width="640" height="420" fill="#f6f8fb"/>
+  <rect x="94" y="92" width="452" height="236" rx="32" fill="#134e4a"/>
+  <rect x="126" y="124" width="388" height="172" rx="24" fill="#ecfeff" opacity=".9"/>
+  <path d="M166 250c48-68 89-84 124-48 32 34 67 38 104 12 31-22 58-16 84 18" fill="none" stroke="#0f766e" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="208" cy="168" r="22" fill="#f59e0b"/>
+  <circle cx="440" cy="164" r="18" fill="#ef4444"/>
+  <path d="M176 320h288" stroke="#cbd5e1" stroke-width="14" stroke-linecap="round"/>
+</svg>

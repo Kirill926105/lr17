@@ -52,6 +52,9 @@ class Product(models.Model):
     class Meta:
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
+        constraints = [
+            models.CheckConstraint(condition=models.Q(stock__gte=0), name="stock_non_negative"),
+        ]
 
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="Пользователь")

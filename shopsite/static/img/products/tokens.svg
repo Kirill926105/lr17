@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Tokens and markers</title>
+  <desc id="desc">Tokens, markers and counters for board games</desc>
+  <rect width="640" height="420" fill="#f5f7fb"/>
+  <circle cx="214" cy="184" r="76" fill="#f59e0b"/>
+  <circle cx="214" cy="184" r="48" fill="#fde68a"/>
+  <path d="M190 184h48M214 160v48" stroke="#92400e" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="338" cy="220" r="70" fill="#0f766e"/>
+  <path d="M306 220h64" stroke="#ccfbf1" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="448" cy="156" r="58" fill="#e11d48"/>
+  <path d="M428 138l42 42M470 138l-42 42" stroke="#ffe4e6" stroke-width="12" stroke-linecap="round"/>
+  <path d="M164 314h300" stroke="#cbd5e1" stroke-width="14" stroke-linecap="round"/>
+</svg>

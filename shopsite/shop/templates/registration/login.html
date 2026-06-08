@@ -1,57 +1,60 @@
 {% extends "shop/base.html" %}
 
-{% block title %}Вход в систему{% endblock %}
+{% block title %}Вход{% endblock %}
 
 {% block content %}
-<div style="max-width: 400px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
-    <h2>Авторизация</h2>
-    <div id="login-error" class="alert alert-danger d-none"></div>
+<section class="auth-layout">
+  <div class="auth-copy">
+    <span class="eyebrow">Личный кабинет</span>
+    <h1>Войдите, чтобы оформить заказ и получить чек на почту</h1>
+    <p>В кабинете можно посмотреть профиль, историю заказов и быстро вернуться к покупкам.</p>
+  </div>
+
+  <div class="auth-card">
+    <h2>Вход</h2>
     <form method="post" action="{% url 'login' %}" id="login-form">
-        {% csrf_token %}
-        <div style="margin-bottom: 15px;">
-            <label>Логин:</label><br>
-            <input type="text" name="username" id="login-username" class="form-control" required>
-        </div>
-        <div style="margin-bottom: 15px;">
-            <label>Пароль:</label><br>
-            <input type="password" name="password" id="login-password" class="form-control" required>
-        </div>
-        <input type="hidden" name="next" value="{% url 'account' %}">
-        <button type="submit" class="btn btn-primary w-100">Войти</button>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label" for="login-username">Логин</label>
+        <input type="text" name="username" id="login-username" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="login-password">Пароль</label>
+        <input type="password" name="password" id="login-password" class="form-control" required>
+      </div>
+      <input type="hidden" name="next" value="{% url 'account' %}">
+      <button type="submit" class="btn btn-success w-100">Войти</button>
     </form>
-    <p style="margin-top: 15px; font-size: 0.9rem; color: #666;">
-        Используй аккаунты (например, <b>seed_user1</b> / <b>12345</b>)
+    <p class="auth-note">
+      Нет аккаунта? <a href="{% url 'register' %}">Зарегистрируйтесь</a>.
     </p>
-</div>
+  </div>
+</section>
 
 <script>
 document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    document.getElementById('login-error').classList.add('d-none');
+  e.preventDefault();
 
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
 
-    try {
-        // Получаем JWT токен для API-запросов
-        const resp = await fetch('/api/token/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-        });
+  try {
+    const resp = await fetch('/api/token/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
 
-        if (resp.ok) {
-            const data = await resp.json();
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
-        }
-
-        // Теперь отправляем форму на сервер для создания сессии Django
-        e.target.submit();
-    } catch {
-        document.getElementById('login-error').textContent = 'Ошибка сети';
-        document.getElementById('login-error').classList.remove('d-none');
+    if (resp.ok) {
+      const data = await resp.json();
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
     }
+
+    e.target.submit();
+  } catch {
+    showToast('Ошибка сети. Попробуйте ещё раз.', 'danger');
+  }
 });
 </script>
 {% endblock %}

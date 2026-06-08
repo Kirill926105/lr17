@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Board game accessory</title>
+  <desc id="desc">Abstract board game accessories on a clean background</desc>
+  <rect width="640" height="420" fill="#f5f7fb"/>
+  <rect x="58" y="74" width="524" height="272" rx="18" fill="#ffffff" stroke="#d8e0ea" stroke-width="4"/>
+  <path d="M94 310h452" stroke="#d8e0ea" stroke-width="4" stroke-linecap="round"/>
+  <rect x="126" y="112" width="128" height="168" rx="14" fill="#134e4a"/>
+  <rect x="146" y="132" width="88" height="128" rx="10" fill="#f8fafc" opacity=".92"/>
+  <circle cx="190" cy="196" r="34" fill="#f59e0b"/>
+  <rect x="306" y="126" width="112" height="112" rx="18" fill="#ef4444"/>
+  <circle cx="338" cy="158" r="10" fill="#fff"/>
+  <circle cx="386" cy="206" r="10" fill="#fff"/>
+  <path d="M466 142h58v58h-58zM496 200v62M466 262h58" fill="none" stroke="#2563eb" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

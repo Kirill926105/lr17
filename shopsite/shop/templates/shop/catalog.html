@@ -1,17 +1,28 @@
 {% extends "shop/base.html" %}
+{% load static category_icons %}
+
 {% block title %}Каталог{% endblock %}
 
 {% block content %}
-<div class="row g-4">
+<div class="catalog-header">
+  <div>
+    <span class="eyebrow">Каталог</span>
+    <h1>Аксессуары для настольных игр</h1>
+    <p>Поиск работает по названию товара. Фильтры помогут быстро собрать заказ под вашу коллекцию.</p>
+  </div>
+</div>
 
-  <div class="col-12 col-md-3">
-    <form method="get" class="card card-body">
-      <label class="form-label">Поиск</label>
-      <input class="form-control mb-2" name="q" value="{{ q }}" placeholder="По названию">
+<div class="row g-4 align-items-start">
+  <aside class="col-12 col-lg-3">
+    <form method="get" class="filter-panel">
+      <div class="filter-title">Фильтры</div>
+
+      <label class="form-label">Поиск по названию</label>
+      <input class="form-control mb-3" name="q" value="{{ q }}" placeholder="Например, протекторы">
 
       <label class="form-label">Категория</label>
-      <select class="form-select mb-2" name="category">
-        <option value="">Все</option>
+      <select class="form-select mb-3" name="category">
+        <option value="">Все категории</option>
         {% for c in categories %}
           <option value="{{ c.id }}" {% if category == c.id|stringformat:"s" %}selected{% endif %}>
             {{ c.name }}
@@ -20,8 +31,8 @@
       </select>
 
       <label class="form-label">Производитель</label>
-      <select class="form-select mb-3" name="producer">
-        <option value="">Все</option>
+      <select class="form-select mb-4" name="producer">
+        <option value="">Все производители</option>
         {% for p in producers %}
           <option value="{{ p.id }}" {% if producer == p.id|stringformat:"s" %}selected{% endif %}>
             {{ p.name }}
@@ -29,76 +40,88 @@
         {% endfor %}
       </select>
 
-      <button class="btn btn-success w-100">Применить</button>
+      <button type="submit" class="btn btn-success w-100">Применить</button>
     </form>
-  </div>
+  </aside>
 
-  <div class="col-12 col-md-9">
-    <h1 class="h4 mb-3">Каталог товаров</h1>
-
-    <div id="api-error" class="alert alert-danger d-none"></div>
+  <section class="col-12 col-lg-9">
     <div id="loading" class="text-center my-3 d-none">
       <div class="spinner-border" role="status"></div>
     </div>
 
-    <div id="product-list" class="row g-3">
+    <div id="product-list" class="row g-3 g-xl-4">
       {% for p in page_obj %}
-      <div class="col-12 col-sm-6 col-lg-4">
-        <div class="card h-100">
-          {% if p.image %}
-            <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}">
-          {% endif %}
-          <div class="card-body">
-            <div class="fw-bold mb-1">{{ p.name }}</div>
-            <div class="price">{{ p.price }} руб.</div>
-          </div>
-          <div class="card-footer bg-white border-0 d-grid gap-2">
-            <a class="btn btn-outline-primary" href="{% url 'product_detail' p.id %}">Подробнее</a>
-            <a class="btn btn-success" href="{% url 'add_to_cart' p.id %}">В корзину</a>
-          </div>
+        <div class="col-12 col-sm-6 col-xl-4">
+          <article class="product-card">
+            <div class="product-image-wrap">
+              {% if p.image %}
+                <img src="{{ p.image.url }}" class="product-image" alt="{{ p.name }}">
+              {% else %}
+                <img src="{% static p|product_vector %}" class="product-image" alt="{{ p.name }}">
+              {% endif %}
+              {% if p.stock == 0 %}
+                <div class="out-stock-overlay">Распродано</div>
+              {% endif %}
+            </div>
+            <div class="product-body">
+              <div class="product-meta">{{ p.category.name }} · {{ p.producer.name }}</div>
+              <h2>{{ p.name }}</h2>
+              <div class="product-card-footer">
+                <span class="product-price">{{ p.price }} руб.</span>
+                <span class="stock-pill {% if p.stock == 0 %}is-empty{% endif %}">
+                  {% if p.stock == 0 %}нет в наличии{% else %}{{ p.stock }} шт.{% endif %}
+                </span>
+              </div>
+            </div>
+            <div class="product-actions">
+              <a class="btn btn-outline-primary" href="{% url 'product_detail' p.id %}">Подробнее</a>
+              {% if p.stock == 0 %}
+                <button class="btn btn-secondary" disabled>Нет в наличии</button>
+              {% else %}
+                <a class="btn btn-success" href="{% url 'add_to_cart' p.id %}">В корзину</a>
+              {% endif %}
+            </div>
+          </article>
         </div>
-      </div>
       {% empty %}
-        <p class="text-muted">Товары не найдены.</p>
+        <div class="empty-state">
+          <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:var(--muted);margin-bottom:12px">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+          <p>Товары не найдены. Попробуйте изменить поиск или фильтры.</p>
+        </div>
       {% endfor %}
     </div>
 
-    <!-- ПАГИНАЦИЯ -->
-    <nav class="mt-4">
-      <ul class="pagination flex-wrap">
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link"
-               href="?page={{ page_obj.previous_page_number }}&q={{ q }}&category={{ category }}&producer={{ producer }}">
-              Назад
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Назад</span></li>
-        {% endif %}
-
-        {% for n in page_obj.paginator.page_range %}
-          {% if n == page_obj.number %}
-            <li class="page-item active"><span class="page-link">{{ n }}</span></li>
-          {% else %}
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="mt-4" aria-label="Навигация по каталогу">
+        <ul class="pagination flex-wrap">
+          {% if page_obj.has_previous %}
             <li class="page-item">
-              <a class="page-link" href="?page={{ n }}&q={{ q }}&category={{ category }}&producer={{ producer }}">{{ n }}</a>
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&category={{ category }}&producer={{ producer }}">Назад</a>
             </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Назад</span></li>
           {% endif %}
-        {% endfor %}
 
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link"
-               href="?page={{ page_obj.next_page_number }}&q={{ q }}&category={{ category }}&producer={{ producer }}">
-              Вперёд
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled"><span class="page-link">Вперёд</span></li>
-        {% endif %}
-      </ul>
-    </nav>
-  </div>
+          {% for n in page_obj.paginator.page_range %}
+            {% if n == page_obj.number %}
+              <li class="page-item active"><span class="page-link">{{ n }}</span></li>
+            {% else %}
+              <li class="page-item"><a class="page-link" href="?page={{ n }}&q={{ q }}&category={{ category }}&producer={{ producer }}">{{ n }}</a></li>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&category={{ category }}&producer={{ producer }}">Вперёд</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Вперёд</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  </section>
 </div>
 {% endblock %}

@@ -6,51 +6,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Boardgame Accessories{% endblock %}</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Cormorant Garamond (serif headlines) + Inter (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 
 <body class="d-flex flex-column min-vh-100">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="{% url 'index' %}">BOARDGAME ACCESSORIES</a>
+<!-- ─── Navbar ────────────────────────────────────────────── -->
+<nav class="site-navbar">
+  <div class="navbar navbar-expand-lg container" style="max-width:var(--max-w)">
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+    <a class="navbar-brand brand-mark" href="{% url 'index' %}">
+      <span class="brand-icon" aria-hidden="true">
+        <!-- dice / board-game icon -->
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="4"/>
+          <circle cx="8"  cy="8"  r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="16" cy="8"  r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="8"  cy="16" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="16" cy="16" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span>
+        <span class="brand-title">Boardgame Accessories</span>
+        <span class="brand-subtitle">Беларусь</span>
+      </span>
+    </a>
+
+    <button class="navbar-toggler" type="button"
+            data-bs-toggle="collapse" data-bs-target="#nav"
+            aria-controls="nav" aria-expanded="false"
+            aria-label="Открыть меню">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="nav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Главная</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'catalog' %}">Каталог</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'cart_view' %}">Корзина</a></li>
+      <ul class="navbar-nav me-auto site-nav-links">
+        <li class="nav-item">
+          <a class="nav-link {% block nav_catalog %}{% endblock %}" href="{% url 'catalog' %}">Каталог</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% block nav_cart %}{% endblock %}" href="{% url 'cart_view' %}">Корзина</a>
+        </li>
       </ul>
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
         {% if user.is_authenticated %}
-          <span class="navbar-text text-white-50">Привет, {{ user.username }}!</span>
-          <a class="btn btn-outline-info btn-sm" href="{% url 'account' %}">Личный кабинет</a>
-          <form action="{% url 'logout' %}" method="post" class="m-0" onsubmit="localStorage.removeItem('access_token');localStorage.removeItem('refresh_token')">
+          <span class="username-pill">{{ user.username }}</span>
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'account' %}">Кабинет</a>
+          <form action="{% url 'logout' %}" method="post" class="m-0"
+                onsubmit="localStorage.removeItem('access_token');localStorage.removeItem('refresh_token')">
             {% csrf_token %}
-            <button class="btn btn-outline-light btn-sm" type="submit">Выход</button>
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Выйти</button>
           </form>
         {% else %}
-          <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Войти</a>
-          <a class="btn btn-warning btn-sm" href="{% url 'register' %}">Регистрация</a>
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Войти</a>
+          <a class="btn btn-success btn-sm" href="{% url 'register' %}">Регистрация</a>
         {% endif %}
       </div>
     </div>
   </div>
 </nav>
 
-<main class="container py-4 flex-grow-1">
+<!-- ─── Main ──────────────────────────────────────────────── -->
+<main class="container flex-grow-1"
+      style="max-width:var(--max-w); padding-top:2.25rem; padding-bottom:3.5rem;">
   {% block content %}{% endblock %}
 </main>
 
-<footer class="footer mt-auto py-3">
-  <div class="container small text-muted">© Boardgame Accessories</div>
+<!-- ─── Footer ────────────────────────────────────────────── -->
+<footer class="footer mt-auto">
+  <div class="footer-accent"></div>
+  <div class="container" style="max-width:var(--max-w)">
+
+    <div class="row g-4 g-lg-5">
+
+      <!-- Brand column -->
+      <div class="col-12 col-lg-4">
+        <div class="footer-brand">Boardgame Accessories</div>
+        <p class="footer-text">
+          Чехлы, органайзеры, кубики, жетоны и игровые коврики
+          для домашних партий, клубов и турниров по всей Беларуси.
+        </p>
+        <div class="footer-badges">
+          <span>Минск</span>
+          <span>Гомель</span>
+          <span>Гродно</span>
+          <span>Брест</span>
+          <span>Витебск</span>
+          <span>Могилёв</span>
+        </div>
+      </div>
+
+      <!-- Shop links -->
+      <div class="col-6 col-lg-2">
+        <h3 class="footer-heading">Магазин</h3>
+        <ul class="footer-links">
+          <li><a href="{% url 'catalog' %}">Каталог</a></li>
+          <li><a href="{% url 'cart_view' %}">Корзина</a></li>
+          <li><a href="{% url 'account' %}">Мои заказы</a></li>
+        </ul>
+      </div>
+
+      <!-- Delivery -->
+      <div class="col-6 col-lg-3">
+        <h3 class="footer-heading">Доставка</h3>
+        <ul class="footer-links">
+          <li>Самовывоз: Минск, ул.&nbsp;Игровая,&nbsp;17</li>
+          <li>По Беларуси: Европочта и&nbsp;Белпочта</li>
+          <li>Оплата: карта, ЕРИП, наличные</li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div class="col-12 col-lg-3">
+        <h3 class="footer-heading">Поддержка</h3>
+        <ul class="footer-links">
+          <li>Пн–Пт: 10:00–19:00</li>
+          <li><a href="mailto:support@boardgame.by">support@boardgame.by</a></li>
+          <li>Поможем подобрать аксессуары под вашу игру.</li>
+        </ul>
+      </div>
+
+    </div><!-- /row -->
+
+    <div class="footer-bottom">
+      <span>&copy; Boardgame Accessories, Беларусь</span>
+      <span>Аккуратная упаковка и&nbsp;проверка заказа перед отправкой</span>
+    </div>
+
+  </div>
 </footer>
+
+<div id="toast-container"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'js/main.js' %}"></script>

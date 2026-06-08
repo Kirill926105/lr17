@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Card sleeves</title>
+  <desc id="desc">Protective sleeves and cards for board games</desc>
+  <rect width="640" height="420" fill="#f4f7fb"/>
+  <rect x="120" y="76" width="170" height="254" rx="18" fill="#0f766e" transform="rotate(-8 205 203)"/>
+  <rect x="162" y="66" width="170" height="254" rx="18" fill="#ffffff" stroke="#c9d5e2" stroke-width="4" transform="rotate(-3 247 193)"/>
+  <rect x="206" y="84" width="170" height="254" rx="18" fill="#f8fafc" stroke="#c9d5e2" stroke-width="4" transform="rotate(5 291 211)"/>
+  <path d="M260 156c36-36 85-2 59 42-15 25-45 39-61 57-16-18-46-32-61-57-26-44 23-78 63-42z" fill="#e11d48"/>
+  <rect x="408" y="116" width="104" height="178" rx="12" fill="#fde68a" stroke="#f59e0b" stroke-width="5"/>
+  <path d="M432 172h56M432 204h56M432 236h32" stroke="#92400e" stroke-width="10" stroke-linecap="round"/>
+</svg>

@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Category, Producer, Product, Cart, CartItem, Order, OrderItem, Profile
@@ -75,6 +76,40 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     favorite_category_id = serializers.IntegerField(required=False, allow_null=True)
 
+    def validate_phone(self, value):
+        if value and not re.fullmatch(r'\+375\d{9}', value):
+            raise serializers.ValidationError("Телефон должен быть в формате +375XXXXXXXXX (9 цифр после кода).")
+        if value and len(value) > 13:
+            raise serializers.ValidationError("Телефон не может быть длиннее 13 символов.")
+        return value
+
+    def validate_full_name(self, value):
+        if value:
+            stripped = value.strip()
+            if len(stripped) < 2:
+                raise serializers.ValidationError("Имя должно содержать хотя бы 2 символа.")
+            if len(stripped) > 150:
+                raise serializers.ValidationError("Имя не может быть длиннее 150 символов.")
+        return value
+
+    def validate_address(self, value):
+        if value:
+            stripped = value.strip()
+            if len(stripped) < 5:
+                raise serializers.ValidationError("Адрес должен содержать хотя бы 5 символов.")
+            if len(stripped) > 300:
+                raise serializers.ValidationError("Адрес не может быть длиннее 300 символов.")
+        return value
+
+    def validate_delivery_city(self, value):
+        if value:
+            stripped = value.strip()
+            if len(stripped) < 2:
+                raise serializers.ValidationError("Город должен содержать хотя бы 2 символа.")
+            if len(stripped) > 100:
+                raise serializers.ValidationError("Город не может быть длиннее 100 символов.")
+        return value
+
     def update(self, instance, validated_data):
         fav_cat_id = validated_data.pop("favorite_category_id", None)
         if fav_cat_id is not None:
@@ -86,7 +121,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=4)
+    username = serializers.CharField(min_length=3, max_length=30)
+    password = serializers.CharField(write_only=True, min_length=6, max_length=128)
 
     class Meta:
         model = User
@@ -103,4 +139,4 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True, min_length=4)
+    new_password = serializers.CharField(required=True, min_length=6, max_length=128)

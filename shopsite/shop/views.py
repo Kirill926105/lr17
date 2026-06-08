@@ -1,27 +1,31 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Category, Producer, Cart, CartItem
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
-import openpyxl
-from io import BytesIO
-from django.core.mail import EmailMessage
-from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
-from rest_framework.exceptions import ValidationError
-from .models import Category, Producer, Product, Cart, CartItem, Order, OrderItem, Profile
-from .serializers import (
-    CategorySerializer, ProducerSerializer, ProductSerializer,
-    CartSerializer, CartItemSerializer,
-    OrderSerializer, OrderItemSerializer,
-    ProfileSerializer, RegisterSerializer, ChangePasswordSerializer,
-)
+import logging
+import os
 import random
+from io import BytesIO
+
+import openpyxl
+from django.conf import settings
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Func
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
-from django.contrib.auth import update_session_auth_hash
+
+from .models import Cart, CartItem, Category, Order, OrderItem, Producer, Product, Profile
+from .forms import UserRegistrationForm
+from .serializers import (
+    CartItemSerializer, CartSerializer, CategorySerializer,
+    ChangePasswordSerializer, OrderItemSerializer, OrderSerializer,
+    ProducerSerializer, ProductSerializer, ProfileSerializer, RegisterSerializer,
+)
 
 
 class IsAdminOrManager(IsAuthenticated):
@@ -53,7 +57,7 @@ def index(request):
 
 
 def product_list(request):
-    products = Product.objects.all()
+    products = Product.objects.all().order_by("id")
     categories = Category.objects.all()
     producers = Producer.objects.all()
 
@@ -62,7 +66,7 @@ def product_list(request):
     producer = request.GET.get('producer', '')
 
     if q:
-        products = products.filter(Q(name__icontains=q) | Q(description__icontains=q))
+        products = products.annotate(lower_name=Func('name', function='lower_utf8')).filter(lower_name__contains=q.lower())
     if category:
         products = products.filter(category_id=category)
     if producer:
@@ -90,10 +94,23 @@ def product_detail(request, product_id):
 @login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    if product.stock <= 0:
+        return redirect('cart_view')
+
+    try:
+        qty = int(request.POST.get('quantity', 1))
+    except (ValueError, TypeError):
+        qty = 1
+
+    qty = max(1, min(qty, product.stock))
+
     cart, _ = Cart.objects.get_or_create(user=request.user)
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    if not created:
-        item.quantity += 1
+    if created:
+        item.quantity = qty
+    else:
+        new_qty = item.quantity + qty
+        item.quantity = min(new_qty, product.stock)
     item.save()
     return redirect('cart_view')
 
@@ -101,7 +118,10 @@ def add_to_cart(request, product_id):
 @login_required
 def update_cart(request, item_id):
     item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
-    new_qty = int(request.POST.get('quantity', 1))
+    try:
+        new_qty = int(request.POST.get('quantity', 1))
+    except (ValueError, TypeError):
+        new_qty = item.quantity
     if 0 < new_qty <= item.product.stock:
         item.quantity = new_qty
         item.save()
@@ -123,45 +143,102 @@ def cart_view(request):
 
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('catalog')
     else:
-        form = UserCreationForm()
+        form = UserRegistrationForm()
     return render(request, 'registration/register.html', {'form': form})
 
 
 @login_required
 def checkout_view(request):
-    cart = Cart.objects.get(user=request.user)
-    items = cart.items.all()
+    cart, _ = Cart.objects.get_or_create(user=request.user)
+    items = list(cart.items.select_related("product"))
 
     if request.method == 'POST':
-        target_email = request.POST.get('user_email')
-        
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.append(['Товар', 'Количество', 'Цена за шт.', 'Итого'])
-        for item in items:
-            ws.append([item.product.name, item.quantity, item.product.price, item.get_cost()])
-        
-        buffer = BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
+        target_email = request.POST.get('user_email', '').strip()
 
-        email = EmailMessage(
-            'Ваш чек заказа',
-            'Спасибо! Чек во вложении.',
-            'krzkerouzz@gmail.com',
-            [target_email],
-        )
-        email.attach('receipt.xlsx', buffer.read(), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        email.send()
+        if not items:
+            return redirect('cart_view')
 
-        items.delete() 
-        return render(request, 'shop/success.html', {'email': target_email})
+        if not target_email or '@' not in target_email or '.' not in target_email:
+            return render(request, 'shop/checkout.html', {
+                'cart': cart,
+                'error': 'Укажите корректный email для получения чека.',
+            })
+
+        try:
+            with transaction.atomic():
+                for item in items:
+                    if item.product.stock < item.quantity:
+                        return render(request, 'shop/checkout.html', {
+                            'cart': cart,
+                            'error': f'Недостаточно товара "{item.product.name}" на складе (осталось {item.product.stock} шт.).',
+                        })
+
+                order = Order.objects.create(user=request.user)
+                for item in items:
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item.product,
+                        quantity=item.quantity,
+                        price=item.product.price,
+                    )
+                    product = item.product
+                    product.stock -= item.quantity
+                    product.save()
+
+                wb = openpyxl.Workbook()
+                ws = wb.active
+                ws.title = "Receipt"
+                ws.append(['Order ID', order.id])
+                ws.append(['Customer', request.user.username])
+                ws.append(['Email', target_email])
+                ws.append([])
+                ws.append(['Product', 'Quantity', 'Unit price', 'Total'])
+                for item in items:
+                    ws.append([item.product.name, item.quantity, item.product.price, item.get_cost()])
+                ws.append([])
+                total_price = sum(item.get_cost() for item in items)
+                ws.append(['Total', '', '', total_price])
+
+                buffer = BytesIO()
+                wb.save(buffer)
+                xlsx_content = buffer.getvalue()
+
+                receipts_dir = os.path.join(settings.MEDIA_ROOT, 'receipts')
+                os.makedirs(receipts_dir, exist_ok=True)
+                filename = f'receipt_order_{order.id}_{timezone.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+                receipt_path = os.path.join(receipts_dir, filename)
+                with open(receipt_path, 'wb') as f:
+                    f.write(xlsx_content)
+
+                email = EmailMessage(
+                    subject=f'Чек заказа #{order.id}',
+                    body=f'Спасибо за заказ, {request.user.username}! Чек прикреплён к письму.',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[target_email],
+                )
+                email.attach(f'receipt_order_{order.id}.xlsx', xlsx_content,
+                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                email.send()
+
+                cart.items.all().delete()
+        except Exception as exc:
+            logger = logging.getLogger(__name__)
+            logger.exception("Checkout failed: %s", exc)
+            return render(request, 'shop/checkout.html', {
+                'cart': cart,
+                'error': 'Не удалось оформить заказ. Попробуйте еще раз.',
+            })
+
+        total_price = sum(item.get_cost() for item in items)
+        return render(request, 'shop/success.html', {
+            'email': target_email, 'order': order, 'total_price': total_price,
+        })
 
     return render(request, 'shop/checkout.html', {'cart': cart})
 
@@ -202,7 +279,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         producer = self.request.query_params.get('producer')
 
         if q:
-            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
+            qs = qs.annotate(lower_name=Func('name', function='lower_utf8')).filter(lower_name__contains=q.lower())
         if category:
             qs = qs.filter(category_id=category)
         if producer:
@@ -278,19 +355,33 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 @permission_classes([IsAuthenticated])
 def api_cart_add(request):
     product_id = request.data.get('product_id')
-    quantity = int(request.data.get('quantity', 1))
+    try:
+        quantity = int(request.data.get('quantity', 1))
+    except (TypeError, ValueError):
+        return Response({'error': 'quantity must be a positive integer'}, status=400)
 
     if not product_id:
         return Response({'error': 'product_id is required'}, status=400)
+    if quantity <= 0:
+        return Response({'error': 'quantity must be a positive integer'}, status=400)
 
     product = get_object_or_404(Product, id=product_id)
     cart, _ = Cart.objects.get_or_create(user=request.user)
 
     item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    if created:
-        item.quantity = quantity
-    else:
-        item.quantity += quantity
+    current_quantity = 0 if created else item.quantity
+    requested_quantity = current_quantity + quantity
+
+    if requested_quantity > product.stock:
+        if created:
+            item.delete()
+        return Response({
+            'error': 'Not enough stock',
+            'available': max(product.stock - current_quantity, 0),
+            'stock': product.stock,
+        }, status=400)
+
+    item.quantity = requested_quantity
     item.save()
 
     return Response({'ok': True, 'item_id': item.id, 'quantity': item.quantity})
@@ -311,7 +402,14 @@ def api_me(request):
     serializer = ProfileSerializer(profile, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data)
+        email = request.data.get('email')
+        if email is not None:
+            request.user.email = email
+            request.user.save()
+        profile.refresh_from_db()
+        result = ProfileSerializer(profile).data
+        result['email'] = request.user.email
+        return Response(result)
     return Response(serializer.errors, status=400)
 
 

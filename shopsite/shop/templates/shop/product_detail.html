@@ -1,8 +1,10 @@
 {% extends "shop/base.html" %}
+{% load static category_icons %}
+
 {% block title %}{{ product.name }}{% endblock %}
 
 {% block content %}
-<nav aria-label="breadcrumb">
+<nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{% url 'index' %}">Главная</a></li>
     <li class="breadcrumb-item"><a href="{% url 'catalog' %}">Каталог</a></li>
@@ -10,41 +12,99 @@
   </ol>
 </nav>
 
-<div class="row g-4">
-  <div class="col-12 col-md-6">
+<section class="product-detail">
+  <div class="product-detail-media" style="position:relative">
     {% if product.image %}
-      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded shadow-sm">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}">
     {% else %}
-      <div class="border rounded p-5 text-center text-muted">Фото товара отсутствует</div>
+      <img src="{% static product|product_vector %}" alt="{{ product.name }}">
+    {% endif %}
+    {% if product.stock == 0 %}
+      <div class="out-stock-overlay" style="opacity:1;border-radius:var(--radius)">Распродано</div>
     {% endif %}
   </div>
 
-  <div class="col-12 col-md-6">
-    <h1 class="h3 fw-bold">{{ product.name }}</h1>
-    <p class="text-muted mb-2">Производитель: <b>{{ product.producer.name }}</b></p>
+  <div class="product-detail-info">
+    <span class="eyebrow">{{ product.category.name }}</span>
+    <h1>{{ product.name }}</h1>
+    <p class="text-muted">Производитель: <strong>{{ product.producer.name }}</strong></p>
 
-    <div class="p-3 border rounded bg-white mb-3">
-      <div class="fs-3 price">{{ product.price }} руб.</div>
-      <div class="text-muted">В наличии: <b>{{ product.stock }}</b> шт.</div>
-    </div>
-
-    <h2 class="h5">Описание</h2>
-    <p class="text-muted">{{ product.description }}</p>
-
-    <div class="text-muted small mb-3">Категория: {{ product.category.name }}</div>
-
-    <div class="d-flex gap-2">
+    <div class="buy-panel">
+      <div>
+        <div class="product-detail-price">{{ product.price }} руб.</div>
+        <div class="text-muted">
+          {% if product.stock == 0 %}
+            Нет в наличии
+          {% else %}
+            В наличии: <strong>{{ product.stock }}</strong> шт.
+          {% endif %}
+        </div>
+      </div>
       {% if product.stock == 0 %}
-        <button class="btn btn-secondary" disabled>Нет в наличии</button>
+        <button class="btn btn-secondary btn-lg" disabled>Нет в наличии</button>
       {% else %}
-        <form action="{% url 'add_to_cart' product.id %}" method="post" class="m-0">
+        <form action="{% url 'add_to_cart' product.id %}" method="post" class="d-flex align-items-center gap-3 flex-wrap">
           {% csrf_token %}
-          <button type="submit" class="btn btn-success">Добавить в корзину</button>
+          <div class="qty-selector">
+            <button type="button" class="qty-btn minus" aria-label="Уменьшить">−</button>
+            <input type="number" name="quantity" id="qty-input" class="qty-input"
+                   value="1" min="1" max="{{ product.stock }}" required>
+            <button type="button" class="qty-btn plus" aria-label="Увеличить">+</button>
+          </div>
+          <button type="submit" class="btn btn-success btn-lg">Добавить в корзину</button>
         </form>
       {% endif %}
-
-      <a class="btn btn-outline-secondary" href="{% url 'catalog' %}">← Назад в каталог</a>
     </div>
+
+    <div class="detail-section">
+      <h2>Описание</h2>
+      <p>{{ product.description }}</p>
+    </div>
+
+    <div class="detail-grid">
+      <div>
+        <span>Категория</span>
+        <strong>{{ product.category.name }}</strong>
+      </div>
+      <div>
+        <span>Производитель</span>
+        <strong>{{ product.producer.name }}</strong>
+      </div>
+      <div>
+        <span>Доставка</span>
+        <strong>по Беларуси</strong>
+      </div>
+    </div>
+
+    <a class="btn btn-outline-secondary" href="{% url 'catalog' %}">Назад в каталог</a>
   </div>
-</div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.querySelectorAll('.qty-selector').forEach(function(sel) {
+    const input = sel.querySelector('.qty-input');
+    const minus = sel.querySelector('.minus');
+    const plus = sel.querySelector('.plus');
+    minus.addEventListener('click', function() {
+      const cur = parseInt(input.value, 10) || 1;
+      const min = parseInt(input.min, 10) || 1;
+      if (cur > min) input.value = cur - 1;
+    });
+    plus.addEventListener('click', function() {
+      const cur = parseInt(input.value, 10) || 1;
+      const max = parseInt(input.max, 10) || 99;
+      if (cur < max) input.value = cur + 1;
+    });
+    input.addEventListener('change', function() {
+      const min = parseInt(input.min, 10) || 1;
+      const max = parseInt(input.max, 10) || 99;
+      let v = parseInt(input.value, 10);
+      if (isNaN(v) || v < min) v = min;
+      if (v > max) v = max;
+      input.value = v;
+    });
+  });
+</script>
 {% endblock %}
