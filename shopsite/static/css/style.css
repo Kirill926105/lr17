@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   Boardgame Accessories — style.css
+   GameNest — style.css
    Warm Earthy · Premium · Serif-forward
    ═══════════════════════════════════════════════════════════ */
 
@@ -1438,7 +1438,6 @@ h1, h2, h3, h4 {
   }
   .hero { min-height: auto; }
   .hero-visual { min-height: 280px; order: -1; }
-  .shape-card-a, .shape-card-b, .shape-die, .shape-token { display: none; }
   .filter-panel { position: static; }
   .feature-strip { grid-template-columns: 1fr; gap: 14px; }
   .detail-grid { grid-template-columns: 1fr 1fr; }
