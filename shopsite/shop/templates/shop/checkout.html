@@ -44,7 +44,7 @@
       {% csrf_token %}
       <label for="email" class="form-label fw-semibold">Почта для получения чека</label>
       <div class="input-group">
-        <input type="email" name="user_email" id="email" class="form-control" required placeholder="example@mail.ru">
+        <input type="email" name="user_email" id="email" class="form-control" required maxlength="254" placeholder="example@mail.ru">
         <button type="submit" class="btn btn-success">Подтвердить и отправить чек</button>
       </div>
     </form>

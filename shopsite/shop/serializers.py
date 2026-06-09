@@ -1,7 +1,9 @@
 import re
-from rest_framework import serializers
 from django.contrib.auth.models import User
+from rest_framework import serializers
+
 from .models import Category, Producer, Product, Cart, CartItem, Order, OrderItem, Profile
+from .utils import validate_email_full
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -132,6 +134,9 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Этот email уже зарегистрирован.")
+        valid, error_msg = validate_email_full(value)
+        if not valid:
+            raise serializers.ValidationError(error_msg)
         return value
 
     def create(self, validated_data):

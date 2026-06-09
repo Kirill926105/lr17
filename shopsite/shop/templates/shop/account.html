@@ -64,23 +64,23 @@
                   <div class="row g-3">
                     <div class="col-12">
                       <label class="form-label" for="edit-email">Email</label>
-                      <input type="email" class="form-control" id="edit-email" placeholder="email@example.com">
+                      <input type="email" class="form-control" id="edit-email" placeholder="email@example.com" maxlength="254">
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-fullname">Полное имя</label>
-                      <input type="text" class="form-control" id="edit-fullname" minlength="2">
+                      <input type="text" class="form-control" id="edit-fullname" minlength="2" maxlength="150">
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-phone">Телефон</label>
-                      <input type="text" class="form-control" id="edit-phone" placeholder="+375 29 123-45-67" pattern="\+375\d{9}">
+                      <input type="text" class="form-control" id="edit-phone" placeholder="+375 29 123-45-67" pattern="\+375\d{9}" maxlength="13">
                     </div>
                     <div class="col-12">
                       <label class="form-label" for="edit-address">Адрес доставки</label>
-                      <textarea class="form-control" id="edit-address" rows="2" placeholder="Улица, дом, квартира" minlength="5"></textarea>
+                      <textarea class="form-control" id="edit-address" rows="2" placeholder="Улица, дом, квартира" minlength="5" maxlength="300"></textarea>
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-city">Город доставки</label>
-                      <input type="text" class="form-control" id="edit-city" placeholder="Минск" minlength="2">
+                      <input type="text" class="form-control" id="edit-city" placeholder="Минск" minlength="2" maxlength="100">
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-favcat">Любимая категория</label>
@@ -300,8 +300,14 @@ async function showOrderDetail(orderId) {
   }
 }
 
+(function() {
+let profileLoading = false;
 document.getElementById('profile-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (profileLoading) return;
+  profileLoading = true;
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
   const data = {
     email: document.getElementById('edit-email').value,
     full_name: document.getElementById('edit-fullname').value,
@@ -325,8 +331,12 @@ document.getElementById('profile-form').addEventListener('submit', async (e) => 
     loadProfile();
   } catch {
     showToast('Ошибка сети. Попробуйте ещё раз.', 'danger');
+  } finally {
+    profileLoading = false;
+    btn.disabled = false;
   }
 });
+})();
 
 (async () => {
   const sessionAuthed = {{ session_authed|yesno:"true,false" }};

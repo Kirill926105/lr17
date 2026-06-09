@@ -9,7 +9,6 @@ from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
-from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Func
 from django.shortcuts import get_object_or_404, redirect, render
@@ -27,6 +26,7 @@ from .serializers import (
     ChangePasswordSerializer, OrderItemSerializer, OrderSerializer,
     ProducerSerializer, ProductSerializer, ProfileSerializer, RegisterSerializer,
 )
+from .utils import validate_email_full
 
 
 class IsAdminOrManager(IsAuthenticated):
@@ -171,12 +171,11 @@ def checkout_view(request):
                 'error': 'Укажите email для получения чека.',
             })
 
-        try:
-            validate_email(target_email)
-        except ValidationError:
+        valid, error_msg = validate_email_full(target_email)
+        if not valid:
             return render(request, 'shop/checkout.html', {
                 'cart': cart,
-                'error': 'Укажите корректный email для получения чека.',
+                'error': error_msg,
             })
 
         try:
@@ -415,10 +414,9 @@ def api_me(request):
         if email is not None and isinstance(email, str):
             email = email.strip()
             if email:
-                try:
-                    validate_email(email)
-                except ValidationError:
-                    return Response({'email': ['Некорректный email.']}, status=400)
+                valid, error_msg = validate_email_full(email)
+                if not valid:
+                    return Response({'email': [error_msg]}, status=400)
                 request.user.email = email
                 request.user.save()
         profile.refresh_from_db()

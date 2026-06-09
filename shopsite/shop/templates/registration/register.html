@@ -26,20 +26,20 @@
       {% endif %}
       <div class="mb-3">
         <label class="form-label" for="id_username">Логин</label>
-        <input type="text" name="username" id="id_username" class="form-control" required minlength="3" value="{{ form.username.value|default:'' }}">
+        <input type="text" name="username" id="id_username" class="form-control" required minlength="3" maxlength="150" value="{{ form.username.value|default:'' }}">
       </div>
       <div class="mb-3">
         <label class="form-label" for="id_email">Email</label>
-        <input type="email" name="email" id="id_email" class="form-control" required value="{{ form.email.value|default:'' }}">
+        <input type="email" name="email" id="id_email" class="form-control" required maxlength="254" value="{{ form.email.value|default:'' }}">
       </div>
       <div class="mb-3">
         <label class="form-label" for="id_password1">Пароль</label>
-        <input type="password" name="password1" id="id_password1" class="form-control" required minlength="6">
+        <input type="password" name="password1" id="id_password1" class="form-control" required minlength="6" maxlength="128">
         <div class="form-text">Минимум 6 символов</div>
       </div>
       <div class="mb-3">
         <label class="form-label" for="id_password2">Подтверждение пароля</label>
-        <input type="password" name="password2" id="id_password2" class="form-control" required>
+        <input type="password" name="password2" id="id_password2" class="form-control" required maxlength="128">
       </div>
       <button type="submit" class="btn btn-success w-100">Зарегистрироваться</button>
     </form>

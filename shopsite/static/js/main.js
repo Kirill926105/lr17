@@ -13,7 +13,7 @@ function showToast(message, type) {
     '<button type="button" class="btn-close btn-close-white me-1" data-bs-dismiss="toast" aria-label="Закрыть"></button>';
   toast.appendChild(body);
   container.appendChild(toast);
-  var bsToast = new bootstrap.Toast(toast, { delay: 3500 });
+  var bsToast = new bootstrap.Toast(toast, { delay: 2000, animation: false });
   bsToast.show();
   toast.addEventListener('hidden.bs.toast', function() { toast.remove(); });
 }
@@ -85,7 +85,7 @@ function renderProducts(products) {
     const stock = Number(p.stock || 0);
     const stockLabel = stock > 0 ? `${stock} шт.` : 'нет в наличии';
     const cartControl = stock > 0
-      ? `<button class="btn btn-success" onclick="addToCart(${p.id})">В корзину</button>`
+      ? `<button class="btn btn-success" onclick="addToCart(${p.id}, this)">В корзину</button>`
       : '<button class="btn btn-secondary" disabled>Нет в наличии</button>';
 
     container.innerHTML += `
@@ -127,7 +127,8 @@ async function loadProductsFromApi() {
   }
 }
 
-async function addToCart(productId) {
+async function addToCart(productId, btn) {
+  if (btn) btn.disabled = true;
   try {
     const resp = await apiFetch('/api/cart/add/', {
       method: 'POST',
@@ -145,5 +146,7 @@ async function addToCart(productId) {
     showToast('Товар добавлен в корзину.', 'success');
   } catch (error) {
     showToast(error.message || 'Не удалось добавить товар в корзину. Возможно, нужно войти.', 'danger');
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }

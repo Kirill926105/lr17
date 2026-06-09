@@ -16,11 +16,11 @@
       {% csrf_token %}
       <div class="mb-3">
         <label class="form-label" for="login-username">Логин</label>
-        <input type="text" name="username" id="login-username" class="form-control" required>
+        <input type="text" name="username" id="login-username" class="form-control" required maxlength="150">
       </div>
       <div class="mb-3">
         <label class="form-label" for="login-password">Пароль</label>
-        <input type="password" name="password" id="login-password" class="form-control" required>
+        <input type="password" name="password" id="login-password" class="form-control" required maxlength="128">
       </div>
       <input type="hidden" name="next" value="{% url 'account' %}">
       <button type="submit" class="btn btn-success w-100">Войти</button>
@@ -32,8 +32,14 @@
 </section>
 
 <script>
+(function() {
+let loginLoading = false;
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (loginLoading) return;
+  loginLoading = true;
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
 
   const username = document.getElementById('login-username').value;
   const password = document.getElementById('login-password').value;
@@ -53,8 +59,11 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
     e.target.submit();
   } catch {
+    loginLoading = false;
+    btn.disabled = false;
     showToast('Ошибка сети. Попробуйте ещё раз.', 'danger');
   }
 });
+})();
 </script>
 {% endblock %}
