@@ -9,6 +9,7 @@ from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.core.paginator import Paginator
+from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Func
 from django.shortcuts import get_object_or_404, redirect, render
@@ -164,7 +165,15 @@ def checkout_view(request):
         if not items:
             return redirect('cart_view')
 
-        if not target_email or '@' not in target_email or '.' not in target_email:
+        if not target_email:
+            return render(request, 'shop/checkout.html', {
+                'cart': cart,
+                'error': 'Укажите email для получения чека.',
+            })
+
+        try:
+            validate_email(target_email)
+        except ValidationError:
             return render(request, 'shop/checkout.html', {
                 'cart': cart,
                 'error': 'Укажите корректный email для получения чека.',
@@ -403,9 +412,15 @@ def api_me(request):
     if serializer.is_valid():
         serializer.save()
         email = request.data.get('email')
-        if email is not None:
-            request.user.email = email
-            request.user.save()
+        if email is not None and isinstance(email, str):
+            email = email.strip()
+            if email:
+                try:
+                    validate_email(email)
+                except ValidationError:
+                    return Response({'email': ['Некорректный email.']}, status=400)
+                request.user.email = email
+                request.user.save()
         profile.refresh_from_db()
         result = ProfileSerializer(profile).data
         result['email'] = request.user.email

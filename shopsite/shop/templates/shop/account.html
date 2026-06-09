@@ -68,19 +68,19 @@
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-fullname">Полное имя</label>
-                      <input type="text" class="form-control" id="edit-fullname">
+                      <input type="text" class="form-control" id="edit-fullname" minlength="2">
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-phone">Телефон</label>
-                      <input type="text" class="form-control" id="edit-phone" placeholder="+375 29 123-45-67">
+                      <input type="text" class="form-control" id="edit-phone" placeholder="+375 29 123-45-67" pattern="\+375\d{9}">
                     </div>
                     <div class="col-12">
                       <label class="form-label" for="edit-address">Адрес доставки</label>
-                      <textarea class="form-control" id="edit-address" rows="2" placeholder="Улица, дом, квартира"></textarea>
+                      <textarea class="form-control" id="edit-address" rows="2" placeholder="Улица, дом, квартира" minlength="5"></textarea>
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-city">Город доставки</label>
-                      <input type="text" class="form-control" id="edit-city" placeholder="Минск">
+                      <input type="text" class="form-control" id="edit-city" placeholder="Минск" minlength="2">
                     </div>
                     <div class="col-12 col-md-6">
                       <label class="form-label" for="edit-favcat">Любимая категория</label>
