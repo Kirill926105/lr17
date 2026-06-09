@@ -15,7 +15,7 @@
 <section class="product-detail">
   <div class="product-detail-media" style="position:relative">
     {% if product.image %}
-      <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" onerror="this.src='{% static product|product_vector %}'">
     {% else %}
       <img src="{% static product|product_vector %}" alt="{{ product.name }}" loading="lazy">
     {% endif %}

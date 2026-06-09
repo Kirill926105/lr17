@@ -91,7 +91,7 @@ function renderProducts(products) {
     container.innerHTML += `
       <div class="col-12 col-sm-6 col-xl-4">
         <article class="product-card">
-          <img src="${imageUrl}" class="product-image" alt="${escapeHtml(p.name)}">
+          <img src="${imageUrl}" class="product-image" alt="${escapeHtml(p.name)}" loading="lazy" onerror="this.src='${productVector(p)}'">
           <div class="product-body">
             <div class="product-meta">${escapeHtml(p.category_name || '')} · ${escapeHtml(p.producer_name || '')}</div>
             <h2>${escapeHtml(p.name)}</h2>
