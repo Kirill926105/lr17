@@ -513,8 +513,6 @@ h1, h2, h3, h4 {
   position: absolute;
   border-radius: 16px;
   box-shadow: 0 8px 28px rgba(38, 32, 26, .12);
-  inset: 0;
-  overflow: hidden;
   transition: transform .6s var(--ease-out);
 }
 .hero:hover .hero-shape { transform: rotate(0deg) scale(1.04); }
@@ -1437,8 +1435,7 @@ h1, h2, h3, h4 {
     grid-template-columns: 1fr;
   }
   .hero { min-height: auto; }
-  .hero-visual { min-height: 280px; order: -1; display: flex; justify-content: center; align-items: center; }
-  .hero-shapes { width: 260px; height: 260px; }
+  .hero-visual { min-height: 280px; order: -1; }
   .filter-panel { position: static; }
   .feature-strip { grid-template-columns: 1fr; gap: 14px; }
   .detail-grid { grid-template-columns: 1fr 1fr; }
