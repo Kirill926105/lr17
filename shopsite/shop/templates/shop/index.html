@@ -56,9 +56,9 @@
     <div class="col-12 col-sm-6 col-lg-4">
       <article class="product-card">
         {% if p.image %}
-          <img src="{{ p.image.url }}" class="product-image" alt="{{ p.name }}">
+          <img src="{{ p.image.url }}" class="product-image" alt="{{ p.name }}" loading="lazy">
         {% else %}
-          <img src="{% static p|product_vector %}" class="product-image" alt="{{ p.name }}">
+          <img src="{% static p|product_vector %}" class="product-image" alt="{{ p.name }}" loading="lazy">
         {% endif %}
         <div class="product-body">
           <div class="product-meta">{{ p.category.name }}</div>

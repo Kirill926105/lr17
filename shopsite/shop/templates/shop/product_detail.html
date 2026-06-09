@@ -15,9 +15,9 @@
 <section class="product-detail">
   <div class="product-detail-media" style="position:relative">
     {% if product.image %}
-      <img src="{{ product.image.url }}" alt="{{ product.name }}">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
     {% else %}
-      <img src="{% static product|product_vector %}" alt="{{ product.name }}">
+      <img src="{% static product|product_vector %}" alt="{{ product.name }}" loading="lazy">
     {% endif %}
     {% if product.stock == 0 %}
       <div class="out-stock-overlay" style="opacity:1;border-radius:var(--radius)">Распродано</div>
